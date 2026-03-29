@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mockzilla/connexions/refs/heads/master/resources/json-schema.json
+title: Mocks API Explorer
+port: 2200
+
+editor:
+  theme: chrome
+  darkTheme: cobalt
+  fontSize: 14
+
+historyDuration: 8h
+homeURL: /
+
+## Storage backend: defaults to memory for local development.
+## Override with env vars for deployment:
+##   STORAGE_TYPE=redis
+##   REDIS_HOST=host
+##   REDIS_USERNAME=...
+##   REDIS_PASSWORD=...
+storage:
+  type: memory
+  redis:
+    host: localhost

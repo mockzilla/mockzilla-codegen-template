@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+
+env:
+  BINARY_NAME: ${{ github.event.repository.name }}
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Generate and discover
+        run: |
+          go generate ./...
+          go run github.com/mockzilla/connexions/v2/cmd/gen/discover pkg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-sources
+          path: |
+            pkg/*/gen.go
+            pkg/*/service.go
+            pkg/*/setup/openapi.yml
+            cmd/server/services_gen.go
+
+  build:
+    needs: generate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: generated-sources
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          ext=""
+          if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
+          go build -o ${BINARY_NAME}-${GOOS}-${GOARCH}${ext} ./cmd/server/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.BINARY_NAME }}-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: ${{ env.BINARY_NAME }}-*
+          merge-multiple: true
+
+      - name: Delete existing latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release delete latest --yes 2>/dev/null || true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create latest artifacts/* \
+            --title "Latest build" \
+            --notes "Built from $(echo ${GITHUB_SHA} | cut -c1-7)" \
+            --latest

@@ -1,0 +1,26 @@
+version: "2"
+
+run:
+  timeout: 3m
+  tests: false
+
+issues:
+  max-same-issues: 0
+
+linters:
+  enable:
+    - wastedassign
+    - goconst
+    - cyclop
+  disable:
+    - unused
+    - revive
+  exclusions:
+    paths:
+      - pkg/.*/handler
+      - pkg/.*/types
+      - "generate\\.go"
+
+formatters:
+  enable:
+    - goimports

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/doordash-oss/oapi-codegen-dd/main/configuration-schema.json
+package: hello_world
+output:
+  use-single-file: true
+  skip-fmt: true
+  directory: ../
+generate:
+  omit-description: true
+  default-int-type: int64
+  always-prefix-enum-values: true
+  validation:
+    response: true
+  handler:
+    kind: chi
+    output:
+      overwrite: true
+    service: {}
+    # middleware: {}
+    validation:
+      request: true
+      response: true
+error-mapping:

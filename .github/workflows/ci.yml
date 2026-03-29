@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+    branches: "**"
+
+permissions: read-all
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.10.1
+          args: --timeout 5m
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: go mod download && go mod tidy && go mod verify
+      - run: git --no-pager diff --exit-code
+
+      - run: go vet ./...
+      - run: git --no-pager diff --exit-code
+
+      - run: go fmt ./...
+      - run: git --no-pager diff --exit-code
+
+      - name: Check generate produces no diff
+        run: |
+          go generate ./...
+          go run github.com/mockzilla/connexions/v2/cmd/gen/discover pkg
+          git --no-pager diff --exit-code
+
+      - name: Test
+        run: go test -race -count=1 ./...
