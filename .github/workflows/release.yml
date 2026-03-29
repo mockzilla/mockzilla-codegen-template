@@ -71,7 +71,8 @@ jobs:
         run: |
           ext=""
           if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
-          go build -o ${BINARY_NAME}-${GOOS}-${GOARCH}${ext} ./cmd/server/
+          VERSION="${GITHUB_SHA::7}"
+          go build -ldflags "-X main.version=${VERSION}" -o ${BINARY_NAME}-${GOOS}-${GOARCH}${ext} ./cmd/server/
 
       - uses: actions/upload-artifact@v4
         with:
