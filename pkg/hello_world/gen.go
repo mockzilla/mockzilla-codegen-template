@@ -105,7 +105,7 @@ func (h *OapiDefaultErrorHandler) HandleError(w http.ResponseWriter, r *http.Req
 
 // ServiceInterface defines the service interface for business logic.
 type ServiceInterface interface {
-	PostHello(ctx context.Context) (*PostHelloResponseData, error)
+	PostHello(ctx context.Context, opts *PostHelloServiceRequestOptions) (*PostHelloResponseData, error)
 }
 
 // HTTPAdapter adapts the ServiceInterface to HTTP handlers.
@@ -127,9 +127,41 @@ func NewHTTPAdapter(svc ServiceInterface, errHandler OapiErrorHandler) *HTTPAdap
 // PostHello handles POST /hello
 func (a *HTTPAdapter) PostHello(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	opts := &PostHelloServiceRequestOptions{}
+	opts.RawRequest = r
+
+	// Parse query parameters
+	queryParams := &PostHelloQuery{}
+	query := r.URL.Query()
+	if queryParamQStr := query.Get("q"); queryParamQStr != "" {
+		queryParamQ := queryParamQStr
+		queryParams.Q = &queryParamQ
+	}
+	opts.Query = queryParams
+	// Parse request body
+	defer r.Body.Close()
+	var body PostHelloBody
+	if err := runtime.DecodeJSONBody(r.Body, &body); err != nil {
+		a.errHandler.HandleError(w, r, http.StatusBadRequest, OapiHandlerError{
+			Kind:        OapiErrorKindDecode,
+			OperationID: "PostHello",
+			Message:     err.Error(),
+		})
+		return
+	}
+	opts.Body = &body
+	// Validate request
+	if err := opts.Validate(); err != nil {
+		a.errHandler.HandleError(w, r, http.StatusBadRequest, OapiHandlerError{
+			Kind:        OapiErrorKindValidation,
+			OperationID: "PostHello",
+			Message:     err.Error(),
+		})
+		return
+	}
 
 	// Call business logic
-	resp, err := a.svc.PostHello(ctx)
+	resp, err := a.svc.PostHello(ctx, opts)
 	if err != nil {
 		code := http.StatusInternalServerError
 		a.errHandler.HandleError(w, r, code, err)
@@ -384,24 +416,28 @@ type generatorService struct {
 var _ ServiceInterface = (*generatorService)(nil)
 
 // PostHello handles POST /hello
-func (s *generatorService) PostHello(ctx context.Context) (*PostHelloResponseData, error) {
-	// Call user's service first
-	if resp, err := s.service.PostHello(ctx); resp != nil || err != nil {
+func (s *generatorService) PostHello(ctx context.Context, opts *PostHelloServiceRequestOptions) (*PostHelloResponseData, error) {
+	// Inject GenerateResponse so user service can call it
+	opts.GenerateResponse = func() (*PostHelloResponseData, error) {
+		respSchema := s.registry.GetResponseSchema("/hello", "POST")
+		if respSchema == nil {
+			return NewPostHelloResponseData(nil), nil
+		}
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		var body PostHelloResponse
+		if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
+			return nil, err
+		}
+		return NewPostHelloResponseData(&body).WithHeaders(res.Headers), nil
+	}
+
+	// Call user's service
+	if resp, err := s.service.PostHello(ctx, opts); resp != nil || err != nil {
 		return resp, err
 	}
 
 	// Fallback to generator
-	respSchema := s.registry.GetResponseSchema("/hello", "POST")
-	if respSchema == nil {
-		return NewPostHelloResponseData(nil), nil
-	}
-
-	res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
-	var body PostHelloResponse
-	if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
-		return nil, err
-	}
-	return NewPostHelloResponseData(&body).WithHeaders(res.Headers), nil
+	return opts.GenerateResponse()
 }
 
 // ============================================================================
@@ -487,6 +523,26 @@ func GeneratePostHelloRequest(ctx map[string]any) (schema.GeneratedRequest, erro
 	return f.Request("/hello", "POST", ctx)
 }
 
+// GeneratePostHelloRequestBody generates a typed mock request body for POST /hello.
+// ctx is an optional replacement context for controlling generated values.
+func GeneratePostHelloRequestBody(ctx map[string]any) (*PostHelloBody, error) {
+	req, err := GeneratePostHelloRequest(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var body PostHelloBody
+	if err := json.Unmarshal(req.Body, &body); err != nil {
+		return nil, err
+	}
+	return &body, nil
+}
+
+type PostHelloBody map[string]any
+
+type PostHelloQuery struct {
+	Q *string `json:"q,omitempty"`
+}
+
 // PostHelloResponseData wraps the success response with optional headers and status override.
 type PostHelloResponseData struct {
 	Body    *PostHelloResponse
@@ -513,6 +569,42 @@ func (r *PostHelloResponseData) WithStatus(code int) *PostHelloResponseData {
 
 type PostHelloResponse struct {
 	Hellow *string `json:"hellow,omitempty"`
+}
+
+// PostHelloServiceRequestOptions holds all parameters for the PostHello operation.
+type PostHelloServiceRequestOptions struct {
+	Query *PostHelloQuery
+	Body  *PostHelloBody
+	// RawRequest provides access to the underlying HTTP request for custom content type handling.
+	RawRequest *http.Request
+	// GenerateResponse generates a sample response with random data satisfying the OpenAPI schema.
+	GenerateResponse func() (*PostHelloResponseData, error)
+}
+
+// Validate validates all the fields in the options.
+func (o *PostHelloServiceRequestOptions) Validate() error {
+	var errors runtime.ValidationErrors
+
+	if o.Query != nil {
+		if v, ok := any(o.Query).(runtime.Validator); ok {
+			if err := v.Validate(); err != nil {
+				errors = errors.Append("Query", err)
+			}
+		}
+	}
+
+	if o.Body != nil {
+		if v, ok := any(o.Body).(runtime.Validator); ok {
+			if err := v.Validate(); err != nil {
+				errors = errors.Append("Body", err)
+			}
+		}
+	}
+	if len(errors) == 0 {
+		return nil
+	}
+
+	return errors
 }
 
 var typesValidator *validator.Validate

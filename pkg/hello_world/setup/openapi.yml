@@ -1,3 +1,5 @@
+# This file is auto-generated from static files in setup/data/.
+# Do not edit manually - modify the static files and regenerate instead.
 info:
   title: hello_world
   version: 1.0.0
@@ -6,6 +8,19 @@ paths:
   /hello:
     post:
       operationId: postHello
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+        required: false
       responses:
         '200':
           content:

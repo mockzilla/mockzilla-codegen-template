@@ -26,7 +26,7 @@ func newService(params *api.ServiceParams) *service {
 }
 
 // PostHello handles POST /hello
-func (s *service) PostHello(ctx context.Context) (*PostHelloResponseData, error) {
+func (s *service) PostHello(ctx context.Context, opts *PostHelloServiceRequestOptions) (*PostHelloResponseData, error) {
 	// TODO: Implement your business logic here.
 	// Return nil, nil to use the generated mock response.
 	return nil, nil
