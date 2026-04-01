@@ -3,12 +3,12 @@ module github.com/mockzilla/connexions-codegen-template
 go 1.25.3
 
 require (
-	github.com/doordash-oss/oapi-codegen-dd/v3 v3.72.12
+	github.com/doordash-oss/oapi-codegen-dd/v3 v3.74.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
-	github.com/mockzilla/connexions/v2 v2.1.83
+	github.com/mockzilla/connexions/v2 v2.1.84
 	go.yaml.in/yaml/v4 v4.0.0-rc.4
 )
 
@@ -26,13 +26,12 @@ require (
 	github.com/jaswdr/faker/v2 v2.9.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/pb33f/jsonpath v0.8.1 // indirect
-	github.com/pb33f/libopenapi v0.33.11 // indirect
+	github.com/pb33f/libopenapi v0.34.3 // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.0 // indirect
 	github.com/redis/go-redis/v9 v9.13.0 // indirect
-	github.com/sony/gobreaker/v2 v2.3.0 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
