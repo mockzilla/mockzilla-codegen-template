@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [labeled, synchronize, reopened, closed]
 
 permissions:
   contents: read
@@ -13,6 +13,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'Mockzilla')
     steps:
       - uses: actions/checkout@v4
 
