@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mockzilla/connexions/refs/heads/master/resources/json-schema.json
-title: Mocks API Explorer
 port: 2200
 
 editor:
