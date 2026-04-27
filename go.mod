@@ -3,7 +3,7 @@ module github.com/mockzilla/connexions-codegen-template
 go 1.25.3
 
 require (
-	github.com/doordash-oss/oapi-codegen-dd/v3 v3.74.0
+	github.com/doordash-oss/oapi-codegen-dd/v3 v3.74.6
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/joho/godotenv v1.5.1
