@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
-	github.com/mockzilla/connexions/v2 v2.1.95
+	github.com/mockzilla/connexions/v2 v2.1.98
 	go.yaml.in/yaml/v4 v4.0.0-rc.4
 )
 
