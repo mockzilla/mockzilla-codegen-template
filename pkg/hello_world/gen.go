@@ -19,14 +19,14 @@ import (
 	"github.com/doordash-oss/oapi-codegen-dd/v3/pkg/runtime"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
-	"github.com/mockzilla/connexions/v2/pkg/api"
-	"github.com/mockzilla/connexions/v2/pkg/config"
-	"github.com/mockzilla/connexions/v2/pkg/db"
-	"github.com/mockzilla/connexions/v2/pkg/factory"
-	"github.com/mockzilla/connexions/v2/pkg/generator"
-	"github.com/mockzilla/connexions/v2/pkg/loader"
-	"github.com/mockzilla/connexions/v2/pkg/schema"
-	"github.com/mockzilla/connexions/v2/pkg/typedef"
+	"github.com/mockzilla/mockzilla/v2/pkg/api"
+	"github.com/mockzilla/mockzilla/v2/pkg/config"
+	"github.com/mockzilla/mockzilla/v2/pkg/db"
+	"github.com/mockzilla/mockzilla/v2/pkg/factory"
+	"github.com/mockzilla/mockzilla/v2/pkg/generator"
+	"github.com/mockzilla/mockzilla/v2/pkg/loader"
+	"github.com/mockzilla/mockzilla/v2/pkg/schema"
+	"github.com/mockzilla/mockzilla/v2/pkg/typedef"
 	yamlv4 "go.yaml.in/yaml/v4"
 )
 
@@ -111,8 +111,9 @@ type ServiceInterface interface {
 // HTTPAdapter adapts the ServiceInterface to HTTP handlers.
 // This struct is generated and should not be modified.
 type HTTPAdapter struct {
-	svc        ServiceInterface
-	errHandler OapiErrorHandler
+	svc             ServiceInterface
+	errHandler      OapiErrorHandler
+	jsonBodyDecoder runtime.JSONBodyDecoderFunc
 }
 
 // NewHTTPAdapter creates a new HTTPAdapter wrapping the given service.
@@ -121,7 +122,7 @@ func NewHTTPAdapter(svc ServiceInterface, errHandler OapiErrorHandler) *HTTPAdap
 	if errHandler == nil {
 		errHandler = &OapiDefaultErrorHandler{}
 	}
-	return &HTTPAdapter{svc: svc, errHandler: errHandler}
+	return &HTTPAdapter{svc: svc, errHandler: errHandler, jsonBodyDecoder: runtime.DecodeJSONBody}
 }
 
 // PostHello handles POST /hello
@@ -141,7 +142,7 @@ func (a *HTTPAdapter) PostHello(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	defer r.Body.Close()
 	var body PostHelloBody
-	if err := runtime.DecodeJSONBody(r.Body, &body); err != nil {
+	if err := a.jsonBodyDecoder(r.Body, &body); err != nil {
 		a.errHandler.HandleError(w, r, http.StatusBadRequest, OapiHandlerError{
 			Kind:        OapiErrorKindDecode,
 			OperationID: "PostHello",
@@ -164,6 +165,9 @@ func (a *HTTPAdapter) PostHello(w http.ResponseWriter, r *http.Request) {
 	resp, err := a.svc.PostHello(ctx, opts)
 	if err != nil {
 		code := http.StatusInternalServerError
+		if resp != nil && resp.Status != 0 {
+			code = resp.Status
+		}
 		a.errHandler.HandleError(w, r, code, err)
 		return
 	}
@@ -247,7 +251,7 @@ func NewRouter(svc ServiceInterface, opts ...RouterOption) chi.Router {
 }
 
 // ============================================================================
-// Connexions Service Registration
+// mockzilla Service Registration
 // ============================================================================
 
 //go:embed setup/config.yml
@@ -300,7 +304,14 @@ func RegisterAPIRouter(router *api.Router) {
 	codegenCfg = codegenCfg.Merge(oapicodegen.NewDefaultConfiguration())
 
 	// Create the typedef registry from the OpenAPI spec
-	registry := typedef.NewRegistryFromSpec(openapiSpec, codegenCfg, cfg.SpecOptions)
+	registry, err := typedef.NewRegistryFromSpec(openapiSpec, codegenCfg, cfg.SpecOptions)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to create registry for %s", serviceName),
+			"error", err,
+			"service", serviceName,
+		)
+		return
+	}
 
 	// Create the generator with service contexts
 	orderedCtx := generator.LoadServiceContext(contextSrc, router.GetContexts())
@@ -313,7 +324,7 @@ func RegisterAPIRouter(router *api.Router) {
 		return
 	}
 
-	// Register with connexions using handler factory
+	// Register with mockzilla using handler factory
 	router.RegisterHTTPHandler(cfg, func(serviceDB db.DB) api.Handler {
 		userSvc := newService(&api.ServiceParams{
 			AppConfig:     router.Config(),

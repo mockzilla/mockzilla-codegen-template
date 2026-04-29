@@ -18,8 +18,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
-	"github.com/mockzilla/connexions/v2/pkg/api"
-	"github.com/mockzilla/connexions/v2/pkg/loader"
+	"github.com/mockzilla/mockzilla/v2/pkg/api"
+	"github.com/mockzilla/mockzilla/v2/pkg/loader"
 )
 
 var version = "dev"

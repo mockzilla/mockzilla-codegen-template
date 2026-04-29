@@ -40,17 +40,17 @@ test:
 .PHONY: service-from-static
 service-from-static:
 	@echo "Generating new static service..."
-	@go run github.com/mockzilla/connexions/v2/cmd/gen/service -type static -name=$(name) -output=pkg/$(name)
+	@go run github.com/mockzilla/mockzilla/v2/cmd/gen/service -type static -name=$(name) -output=pkg/$(name)
 
 .PHONY: service
 service:
 	@echo "Generating new OpenAPI service..."
-	@go run github.com/mockzilla/connexions/v2/cmd/gen/service -type openapi -name=$(name) -output=pkg/$(name)
+	@go run github.com/mockzilla/mockzilla/v2/cmd/gen/service -type openapi -name=$(name) -output=pkg/$(name)
 
 .PHONY: discover
 discover:
 	@echo "Discovering services to generate service imports..."
-	@go run github.com/mockzilla/connexions/v2/cmd/gen/discover pkg
+	@go run github.com/mockzilla/mockzilla/v2/cmd/gen/discover pkg
 
 #.PHONY: generate
 generate:

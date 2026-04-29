@@ -1,13 +1,13 @@
-# Connexions Codegen Template
+# Mockzilla Codegen Template
 
-Generate a Go mock server from OpenAPI specs with [Connexions](https://github.com/mockzilla/connexions).
+Generate a Go mock server from OpenAPI specs with [Mockzilla](https://github.com/mockzilla/mockzilla).
 
 Each service is a Go package with generated handlers, embedded OpenAPI specs, and optional custom logic.
 Includes an API Explorer UI at `/api-explorer`.
 
 ## Quick start
 
-1. Click [**Use this template**](https://github.com/mockzilla/connexions-codegen-template/generate) to create your own repository
+1. Click [**Use this template**](https://github.com/mockzilla/mockzilla-codegen-template/generate) to create your own repository
 2. Add services (see below)
 3. Regenerate and discover:
    ```bash
@@ -83,7 +83,7 @@ make build
 .build/server/server
 ```
 
-See the [Connexions docs](https://github.com/mockzilla/connexions) for more options.
+See the [Mockzilla docs](https://github.com/mockzilla/mockzilla) for more options.
 
 ## Release
 
