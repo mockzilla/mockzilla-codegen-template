@@ -14,7 +14,7 @@ clean-cache:
 build: clean generate discover
 	@echo "Go version: $(GO_VERSION)"
 	@go mod download
-	@go build $(GO_BUILD_FLAGS) -o ${build_dir}/server/server ./cmd/server/
+	@go build $(GO_BUILD_FLAGS) -o ${build_dir}/mockzilla/mockzilla ./cmd/mockzilla/
 
 .PHONY: mod
 mod:
