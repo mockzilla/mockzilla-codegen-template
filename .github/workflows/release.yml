@@ -32,7 +32,7 @@ jobs:
             pkg/*/gen.go
             pkg/*/service.go
             pkg/*/setup/openapi.yml
-            cmd/mockzilla/services_gen.go
+            cmd/server/services_gen.go
 
   build:
     needs: generate
@@ -72,7 +72,7 @@ jobs:
           ext=""
           if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
           VERSION="${GITHUB_SHA::7}"
-          go build -ldflags "-X main.version=${VERSION}" -o ${BINARY_NAME}-${GOOS}-${GOARCH}${ext} ./cmd/mockzilla/
+          go build -ldflags "-X main.version=${VERSION}" -o ${BINARY_NAME}-${GOOS}-${GOARCH}${ext} ./cmd/server/
 
       - uses: actions/upload-artifact@v4
         with:
