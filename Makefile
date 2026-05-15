@@ -50,7 +50,7 @@ service:
 .PHONY: discover
 discover:
 	@echo "Discovering services to generate service imports..."
-	@go run github.com/mockzilla/mockzilla/v2/cmd/gen/discover pkg
+	@go run github.com/mockzilla/mockzilla/v2/cmd/gen/discover -output cmd/server/services_gen.go pkg
 
 #.PHONY: generate
 generate:

@@ -43,7 +43,7 @@ jobs:
       - name: Check generate produces no diff
         run: |
           go generate ./...
-          go run github.com/mockzilla/mockzilla/v2/cmd/gen/discover pkg
+          go run github.com/mockzilla/mockzilla/v2/cmd/gen/discover -output cmd/server/services_gen.go pkg
           git --no-pager diff --exit-code
 
       - name: Test
