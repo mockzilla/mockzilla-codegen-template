@@ -1,19 +1,23 @@
 # Mockzilla Codegen Template
 
-Generate a Go mock server from OpenAPI specs with [Mockzilla](https://github.com/mockzilla/mockzilla).
+An open-source Go mock server template built with [Mockzilla](https://mockzilla.org/).
 
-Each service is a Go package with generated handlers, embedded OpenAPI specs, and optional custom logic.
-Includes an API Explorer UI at `/api-explorer`.
+Source engine: [github.com/mockzilla/mockzilla](https://github.com/mockzilla/mockzilla)
+Website: [mockzilla.org](https://mockzilla.org/)
+
+Generate a Go mock server from OpenAPI specs with typed handlers, embedded specs, and optional custom logic per endpoint. Includes an API Explorer UI and automatic GitHub Actions deploys.
+
+This repo uses the [Mockzilla engine](https://github.com/mockzilla/mockzilla) to serve realistic responses from OpenAPI specs.
 
 ## Quick start
 
-1. Click [**Use this template**](https://github.com/mockzilla/mockzilla-codegen-template/generate) to create your own repository
-2. Add services (see below)
+1. Click [**Use this template**](https://github.com/mockzilla/mockzilla-codegen-template/generate) to create your own repository.
+2. Add services (see below).
 3. Regenerate and discover:
    ```bash
    make generate && make discover
    ```
-4. Push to main - binaries for Linux, macOS, and Windows are built automatically and published to **Releases**
+4. Push to main. Binaries for Linux, macOS, and Windows are built automatically and published to **Releases**.
 
 ## Adding services
 
@@ -83,12 +87,12 @@ make build
 .build/server/server
 ```
 
-See the [Mockzilla docs](https://github.com/mockzilla/mockzilla) for more options.
+See the [Mockzilla docs](https://mockzilla.github.io/mockzilla/) for more options.
 
 ## Release
 
-Every push to main/master generates code, builds binaries for Linux, macOS, and Windows (amd64 and arm64), 
-and publishes them to the **Releases** page. 
+Every push to main/master generates code, builds binaries for Linux, macOS, and Windows (amd64 and arm64),
+and publishes them to the **Releases** page.
 Download the binary for your platform from the `latest` release and run it locally:
 
 ```bash
@@ -99,14 +103,14 @@ Download the binary for your platform from the `latest` release and run it local
 
 The included GitHub Actions workflow (`.github/workflows/mockzilla.yml`) publishes your server to [Mockzilla](https://mockzilla.org) automatically:
 
-- **Push to main/master** — builds and publishes the server to your main simulation
-- **Pull request with `Mockzilla` label** — deploys a preview simulation for the PR (torn down when the PR is closed)
+- **Push to main/master**: builds and publishes the server to your main simulation
+- **Pull request with `Mockzilla` label**: deploys a preview simulation for the PR (torn down when the PR is closed)
 
 The `Mockzilla` label is created automatically on first push via the setup workflow.
 
 Your simulation will be available at:
-- `https://api.mockzilla.org/gh/{org}/{repo}/` — main branch
-- `https://api.mockzilla.org/gh/{org}/{repo}/pr-{n}/` — per pull request
+- `https://api.mockzilla.org/gh/{org}/{repo}/`: main branch
+- `https://api.mockzilla.org/gh/{org}/{repo}/pr-{n}/`: per pull request
 
 ### Action inputs
 
@@ -116,19 +120,19 @@ You can customize the action in `.github/workflows/mockzilla.yml`:
 - uses: mockzilla/actions/codegen@v1
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
-    region: us-east-1        # optional — preferred AWS region, used as a hint on first deploy only
-    memory-size: 256         # optional — memory in MB (default: 128)
-    timeout: 60              # optional — request timeout in seconds
+    region: us-east-1        # optional. Preferred AWS region, used as a hint on first deploy only.
+    memory-size: 256         # optional. Memory in MB (default: 128).
+    timeout: 60              # optional. Request timeout in seconds.
     environment: '{"ENV":"production","DEBUG":"true"}'  # optional
-    host: api.mockzilla.net  # optional — API host for the simulation URL
-    timeout-minutes: 5       # optional — max minutes to wait for simulation to become active (default: 5)
-    delete: false            # optional — remove this repository from Mockzilla (default: false)
+    host: api.mockzilla.net  # optional. API host for the simulation URL.
+    timeout-minutes: 5       # optional. Max minutes to wait for simulation to become active (default: 5).
+    delete: false            # optional. Remove this repository from Mockzilla (default: false).
 ```
 
 | Input | Required | Description |
 |---|---|---|
-| `token` | yes | `GITHUB_TOKEN` — used to verify repo identity |
-| `region` | no | Preferred AWS region (e.g. `us-east-1`, `ap-southeast-1`). Used as a hint on first deploy — if at capacity, the nearest available region is used. Has no effect after the simulation is deployed. |
+| `token` | yes | `GITHUB_TOKEN`, used to verify repo identity. |
+| `region` | no | Preferred AWS region (e.g. `us-east-1`, `ap-southeast-1`). Used as a hint on first deploy. If at capacity, the nearest available region is used. Has no effect after the simulation is deployed. |
 | `memory-size` | no | Memory in megabytes (e.g. `128`, `256`, `512`). Defaults to `128`. |
 | `timeout` | no | Request timeout for the simulation in seconds (e.g. `30`, `60`). |
 | `environment` | no | JSON object of environment variables to set in the simulation (e.g. `'{"ENV":"production"}'`). |
@@ -157,3 +161,7 @@ jobs:
 ```
 
 Trigger it manually from the **Actions** tab when you're ready.
+
+## Disclaimer
+
+This project is not affiliated with or endorsed by any of the API providers whose specifications may be used as examples.
