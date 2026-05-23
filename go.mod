@@ -4,7 +4,7 @@ go 1.25.3
 
 require (
 	github.com/doordash-oss/oapi-codegen-dd/v3 v3.75.5
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
