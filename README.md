@@ -63,7 +63,7 @@ Each service lives in `pkg/{service_name}/` with:
 pkg/petstore/
   setup/
     openapi.yml             # OpenAPI specification
-    config.yml              # Latency, errors, upstream, caching
+    config.yml              # Latency, errors, upstream, replay, caching
     codegen.yml             # Code generation settings
     context.yml             # Custom values for mock data
   generate.go               # go:generate directive
@@ -74,7 +74,7 @@ pkg/petstore/
 ## API Explorer UI
 
 The built-in UI is available at `/` (configurable in `resources/data/app.yml`).
-It lets you browse services, view specs, test endpoints, and inspect request/response history.
+It lets you browse services, view specs, test endpoints, inspect request/response history, and manage replay recordings.
 
 ## Local development
 

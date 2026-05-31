@@ -1,13 +1,18 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/mockzilla/mockzilla/refs/heads/master/resources/json-schema.json
 port: 2200
+homeURL: /
 
 editor:
   theme: chrome
   darkTheme: cobalt
   fontSize: 14
 
-historyDuration: 8h
-homeURL: /
+history:
+  enabled: true
+  duration: 8h
+
+replay:
+  enabled: true
+  duration: 24h
 
 ## Storage backend: defaults to memory for local development.
 ## Override with env vars for deployment:
@@ -18,4 +23,4 @@ homeURL: /
 storage:
   type: memory
   redis:
-    host: localhost
+    address: localhost:6379
