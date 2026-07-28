@@ -542,7 +542,7 @@ func RegisterAPIRouter(router *api.Router) {
 	}
 
 	// Create the generator with service contexts
-	orderedCtx := generator.LoadServiceContext(contextSrc, router.GetContexts())
+	orderedCtx := router.ServiceContext(serviceName, contextSrc)
 	gen, err := generator.NewGenerator(orderedCtx, router.GetContexts())
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to create generator for %s", serviceName),
@@ -662,7 +662,7 @@ func (s *generatorService) FindPets(ctx context.Context, opts *FindPetsServiceRe
 		if respSchema == nil {
 			return NewFindPetsResponseData(nil), nil
 		}
-		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx), generator.WithRequest(api.RequestFromGoContext(ctx)))
 		var body FindPetsResponse
 		if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
 			return nil, err
@@ -687,7 +687,7 @@ func (s *generatorService) AddPet(ctx context.Context, opts *AddPetServiceReques
 		if respSchema == nil {
 			return NewAddPetResponseData(nil), nil
 		}
-		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx), generator.WithRequest(api.RequestFromGoContext(ctx)))
 		var body AddPetResponse
 		if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
 			return nil, err
@@ -712,7 +712,7 @@ func (s *generatorService) FindPetByID(ctx context.Context, opts *FindPetByIDSer
 		if respSchema == nil {
 			return NewFindPetByIDResponseData(nil), nil
 		}
-		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx), generator.WithRequest(api.RequestFromGoContext(ctx)))
 		var body FindPetByIDResponse
 		if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
 			return nil, err
@@ -737,7 +737,7 @@ func (s *generatorService) DeletePet(ctx context.Context, opts *DeletePetService
 		if respSchema == nil {
 			return NewDeletePetResponseData(nil), nil
 		}
-		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx), generator.WithRequest(api.RequestFromGoContext(ctx)))
 		return NewDeletePetResponseData(nil).WithHeaders(res.Headers), nil
 	}
 

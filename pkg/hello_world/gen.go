@@ -299,7 +299,7 @@ func RegisterAPIRouter(router *api.Router) {
 	}
 
 	// Create the generator with service contexts
-	orderedCtx := generator.LoadServiceContext(contextSrc, router.GetContexts())
+	orderedCtx := router.ServiceContext(serviceName, contextSrc)
 	gen, err := generator.NewGenerator(orderedCtx, router.GetContexts())
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to create generator for %s", serviceName),
@@ -419,7 +419,7 @@ func (s *generatorService) PostHello(ctx context.Context, opts *PostHelloService
 		if respSchema == nil {
 			return NewPostHelloResponseData(nil), nil
 		}
-		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx))
+		res := s.generator.Response(respSchema, api.UserContextFromGoContext(ctx), generator.WithRequest(api.RequestFromGoContext(ctx)))
 		var body PostHelloResponse
 		if err := api.UnmarshalResponseInto(res.Body, "application/json", &body); err != nil {
 			return nil, err
