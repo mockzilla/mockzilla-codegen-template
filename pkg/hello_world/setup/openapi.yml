@@ -31,4 +31,4 @@ paths:
                     type: string
                 type: object
               x-static-response: "{\r\n    \"hellow\": \"world\"\r\n}"
-          description: Success
+          description: OK
