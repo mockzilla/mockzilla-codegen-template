@@ -11,7 +11,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"path"
 
 	"sync"
 
@@ -210,8 +209,10 @@ func (a *HTTPAdapter) FindPets(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 	}
 	w.WriteHeader(status)
-	if resp != nil && resp.Body != nil {
-		_ = json.NewEncoder(w).Encode(resp.Body)
+	if resp != nil {
+		if payload := resp.Payload(); payload != nil {
+			_ = json.NewEncoder(w).Encode(payload)
+		}
 	}
 }
 
@@ -286,8 +287,10 @@ func (a *HTTPAdapter) AddPet(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 	}
 	w.WriteHeader(status)
-	if resp != nil && resp.Body != nil {
-		_ = json.NewEncoder(w).Encode(resp.Body)
+	if resp != nil {
+		if payload := resp.Payload(); payload != nil {
+			_ = json.NewEncoder(w).Encode(payload)
+		}
 	}
 }
 
@@ -367,8 +370,10 @@ func (a *HTTPAdapter) FindPetByID(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 	}
 	w.WriteHeader(status)
-	if resp != nil && resp.Body != nil {
-		_ = json.NewEncoder(w).Encode(resp.Body)
+	if resp != nil {
+		if payload := resp.Payload(); payload != nil {
+			_ = json.NewEncoder(w).Encode(payload)
+		}
 	}
 }
 
@@ -470,6 +475,13 @@ func WithErrorHandler(h OapiErrorHandler) RouterOption {
 	}
 }
 
+// ServiceErrorHandler answers the failures raised before the service is reached:
+// parameter parsing, body decoding and request validation. Those never return
+// through the service, so no spec-declared error type describes them and
+// error-mapping does not reach them. A service whose API has an error shape of
+// its own replaces this at init.
+var ServiceErrorHandler OapiErrorHandler = &OapiDefaultErrorHandler{}
+
 // NewRouter creates a new chi.Router with the given service implementation.
 func NewRouter(svc ServiceInterface, opts ...RouterOption) chi.Router {
 	cfg := &routerConfig{}
@@ -521,7 +533,7 @@ func RegisterAPIRouter(router *api.Router) {
 	serviceName := cfg.Name
 
 	// Read OpenAPI spec from embedded FS
-	openapiSpec, err := readFirstEmbeddedFile(openapiSpecFS)
+	openapiSpec, err := api.ReadEmbeddedSpec(openapiSpecFS)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to read OpenAPI spec for %s", serviceName),
 			"error", err,
@@ -532,6 +544,9 @@ func RegisterAPIRouter(router *api.Router) {
 
 	registry, err := typedef.NewRegistry(openapiSpec, typedef.RegistryOptions{
 		SpecOptions: cfg.SpecOptions,
+		// The served request path reads converted operations only, so the
+		// parsed document does not need to stay resident.
+		ReleaseDocument: true,
 	})
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to create registry for %s", serviceName),
@@ -568,20 +583,6 @@ func RegisterAPIRouter(router *api.Router) {
 	)
 }
 
-// readFirstEmbeddedFile reads the first file from an embedded filesystem.
-func readFirstEmbeddedFile(fsys embed.FS) ([]byte, error) {
-	entries, err := fsys.ReadDir("setup")
-	if err != nil {
-		return nil, fmt.Errorf("reading embedded directory: %w", err)
-	}
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			return fsys.ReadFile(path.Join("setup", entry.Name()))
-		}
-	}
-	return nil, errors.New("no file found in embedded filesystem")
-}
-
 // ============================================================================
 // Service Handler
 // ============================================================================
@@ -597,7 +598,7 @@ type serviceHandler struct {
 // newServiceHandler creates a new serviceHandler.
 func newServiceHandler(svc ServiceInterface, gen generator.Generate, registry typedef.OperationRegistry) api.Handler {
 	return &serviceHandler{
-		router:   NewRouter(svc),
+		router:   NewRouter(svc, WithErrorHandler(ServiceErrorHandler)),
 		service:  svc,
 		gen:      gen,
 		registry: registry,
@@ -764,7 +765,7 @@ var (
 // spec options, and context.
 // Use it to generate mock requests and responses programmatically without running the server.
 func NewFactory(opts ...factory.FactoryOption) (*factory.Factory, error) {
-	openapiSpec, err := readFirstEmbeddedFile(openapiSpecFS)
+	openapiSpec, err := api.ReadEmbeddedSpec(openapiSpecFS)
 	if err != nil {
 		return nil, err
 	}
@@ -990,6 +991,16 @@ func (r *FindPetsResponseData) WithStatus(code int) *FindPetsResponseData {
 	return r
 }
 
+// Payload returns the value to be JSON-encoded as the response body. Override
+// this template to customize the encoded shape (e.g. to wrap it in an envelope)
+// without needing to change the adapter template.
+func (r *FindPetsResponseData) Payload() any {
+	if r.Body == nil {
+		return nil
+	}
+	return r.Body
+}
+
 // AddPetResponseData wraps the success response with optional headers and status override.
 type AddPetResponseData struct {
 	Body    *AddPetResponse
@@ -1012,6 +1023,16 @@ func (r *AddPetResponseData) WithHeaders(h http.Header) *AddPetResponseData {
 func (r *AddPetResponseData) WithStatus(code int) *AddPetResponseData {
 	r.Status = code
 	return r
+}
+
+// Payload returns the value to be JSON-encoded as the response body. Override
+// this template to customize the encoded shape (e.g. to wrap it in an envelope)
+// without needing to change the adapter template.
+func (r *AddPetResponseData) Payload() any {
+	if r.Body == nil {
+		return nil
+	}
+	return r.Body
 }
 
 // FindPetByIDResponseData wraps the success response with optional headers and status override.
@@ -1038,6 +1059,16 @@ func (r *FindPetByIDResponseData) WithStatus(code int) *FindPetByIDResponseData 
 	return r
 }
 
+// Payload returns the value to be JSON-encoded as the response body. Override
+// this template to customize the encoded shape (e.g. to wrap it in an envelope)
+// without needing to change the adapter template.
+func (r *FindPetByIDResponseData) Payload() any {
+	if r.Body == nil {
+		return nil
+	}
+	return r.Body
+}
+
 // DeletePetResponseData wraps the success response with optional headers and status override.
 type DeletePetResponseData struct {
 	Body    *struct{}
@@ -1060,6 +1091,16 @@ func (r *DeletePetResponseData) WithHeaders(h http.Header) *DeletePetResponseDat
 func (r *DeletePetResponseData) WithStatus(code int) *DeletePetResponseData {
 	r.Status = code
 	return r
+}
+
+// Payload returns the value to be JSON-encoded as the response body. Override
+// this template to customize the encoded shape (e.g. to wrap it in an envelope)
+// without needing to change the adapter template.
+func (r *DeletePetResponseData) Payload() any {
+	if r.Body == nil {
+		return nil
+	}
+	return r.Body
 }
 
 type FindPetsResponse []Pet
