@@ -3,7 +3,7 @@ module github.com/mockzilla/mockzilla-codegen-template
 go 1.26.8
 
 require (
-	github.com/doordash-oss/oapi-codegen-dd/v3 v3.75.11
+	github.com/doordash-oss/oapi-codegen-dd/v3 v3.75.15
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/joho/godotenv v1.5.1
