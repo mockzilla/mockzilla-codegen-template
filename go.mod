@@ -3,12 +3,12 @@ module github.com/mockzilla/mockzilla-codegen-template
 go 1.26.8
 
 require (
-	github.com/doordash-oss/oapi-codegen-dd/v3 v3.75.11
+	github.com/doordash-oss/oapi-codegen-dd/v3 v3.75.18
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-playground/validator/v10 v10.30.4
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
-	github.com/mockzilla/mockzilla/v2 v2.9.2
+	github.com/mockzilla/mockzilla/v2 v2.9.3
 )
 
 require (

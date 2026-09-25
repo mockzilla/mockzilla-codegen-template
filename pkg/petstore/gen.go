@@ -53,10 +53,18 @@ type OapiHandlerError struct {
 	Message       string
 	ParamName     string
 	ParamLocation string
+
+	// Err is the error that caused this handler error.
+	Err error `json:"-"`
 }
 
 func (e OapiHandlerError) Error() string {
 	return e.Message
+}
+
+// Unwrap returns the underlying error, enabling errors.Is and errors.As.
+func (e OapiHandlerError) Unwrap() error {
+	return e.Err
 }
 
 // OapiErrorResponse is the default JSON error response structure used by OapiDefaultErrorHandler.
@@ -150,6 +158,7 @@ func (a *HTTPAdapter) FindPets(w http.ResponseWriter, r *http.Request) {
 				Message:       err.Error(),
 				ParamName:     "limit",
 				ParamLocation: "query",
+				Err:           err,
 			})
 			return
 		}
@@ -162,6 +171,7 @@ func (a *HTTPAdapter) FindPets(w http.ResponseWriter, r *http.Request) {
 			Kind:        OapiErrorKindValidation,
 			OperationID: "FindPets",
 			Message:     err.Error(),
+			Err:         err,
 		})
 		return
 	}
@@ -185,6 +195,7 @@ func (a *HTTPAdapter) FindPets(w http.ResponseWriter, r *http.Request) {
 					Kind:        OapiErrorKindValidation,
 					OperationID: "FindPets",
 					Message:     fmt.Sprintf("response validation failed: %v", err),
+					Err:         err,
 				})
 				return
 			}
@@ -230,6 +241,7 @@ func (a *HTTPAdapter) AddPet(w http.ResponseWriter, r *http.Request) {
 			Kind:        OapiErrorKindDecode,
 			OperationID: "AddPet",
 			Message:     err.Error(),
+			Err:         err,
 		})
 		return
 	}
@@ -240,6 +252,7 @@ func (a *HTTPAdapter) AddPet(w http.ResponseWriter, r *http.Request) {
 			Kind:        OapiErrorKindValidation,
 			OperationID: "AddPet",
 			Message:     err.Error(),
+			Err:         err,
 		})
 		return
 	}
@@ -263,6 +276,7 @@ func (a *HTTPAdapter) AddPet(w http.ResponseWriter, r *http.Request) {
 					Kind:        OapiErrorKindValidation,
 					OperationID: "AddPet",
 					Message:     fmt.Sprintf("response validation failed: %v", err),
+					Err:         err,
 				})
 				return
 			}
@@ -312,6 +326,7 @@ func (a *HTTPAdapter) FindPetByID(w http.ResponseWriter, r *http.Request) {
 			Message:       err.Error(),
 			ParamName:     "id",
 			ParamLocation: "path",
+			Err:           err,
 		})
 		return
 	}
@@ -323,6 +338,7 @@ func (a *HTTPAdapter) FindPetByID(w http.ResponseWriter, r *http.Request) {
 			Kind:        OapiErrorKindValidation,
 			OperationID: "FindPetByID",
 			Message:     err.Error(),
+			Err:         err,
 		})
 		return
 	}
@@ -346,6 +362,7 @@ func (a *HTTPAdapter) FindPetByID(w http.ResponseWriter, r *http.Request) {
 					Kind:        OapiErrorKindValidation,
 					OperationID: "FindPetByID",
 					Message:     fmt.Sprintf("response validation failed: %v", err),
+					Err:         err,
 				})
 				return
 			}
@@ -395,6 +412,7 @@ func (a *HTTPAdapter) DeletePet(w http.ResponseWriter, r *http.Request) {
 			Message:       err.Error(),
 			ParamName:     "id",
 			ParamLocation: "path",
+			Err:           err,
 		})
 		return
 	}
@@ -406,6 +424,7 @@ func (a *HTTPAdapter) DeletePet(w http.ResponseWriter, r *http.Request) {
 			Kind:        OapiErrorKindValidation,
 			OperationID: "DeletePet",
 			Message:     err.Error(),
+			Err:         err,
 		})
 		return
 	}
@@ -429,6 +448,7 @@ func (a *HTTPAdapter) DeletePet(w http.ResponseWriter, r *http.Request) {
 					Kind:        OapiErrorKindValidation,
 					OperationID: "DeletePet",
 					Message:     fmt.Sprintf("response validation failed: %v", err),
+					Err:         err,
 				})
 				return
 			}
