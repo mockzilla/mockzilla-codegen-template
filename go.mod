@@ -7,7 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mockzilla/mockzilla-codegen v1.0.2
-	github.com/mockzilla/mockzilla/v2 v2.11.0
+	github.com/mockzilla/mockzilla/v2 v2.11.1
 )
 
 require (
