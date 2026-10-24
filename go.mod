@@ -3,7 +3,7 @@ module github.com/mockzilla/mockzilla-codegen-template
 go 1.26.9
 
 require (
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mockzilla/mockzilla-codegen v1.0.2
